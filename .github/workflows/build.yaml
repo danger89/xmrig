@@ -23,7 +23,7 @@ jobs:
       run: make -j 6
     - name: Make executable
       working-directory: ${{env.working-dir}}
-      run: chmod +x xmrig
+      run: chmod u+x ./xmrig
     - uses: actions/upload-artifact@v2
       with:
         name: my-xmrig
