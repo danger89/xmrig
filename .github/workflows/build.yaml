@@ -20,7 +20,7 @@ jobs:
       run: cmake ..
     - name: Build
       working-directory: ${{env.working-dir}}
-      run: make -j$(nproc)
+      run: make -j 6
     - uses: actions/upload-artifact@v2
       with:
         name: my-xmrig
