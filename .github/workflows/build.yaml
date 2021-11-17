@@ -28,3 +28,8 @@ jobs:
       with:
         name: my-xmrig
         path: build/xmrig
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: build/xmrig
