@@ -21,6 +21,9 @@ jobs:
     - name: Build
       working-directory: ${{env.working-dir}}
       run: make -j 6
+    - name: Make executable
+      working-directory: ${{env.working-dir}}
+      run: chmod +x xmrig
     - uses: actions/upload-artifact@v2
       with:
         name: my-xmrig
