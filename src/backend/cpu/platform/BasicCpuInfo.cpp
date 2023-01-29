@@ -64,7 +64,7 @@ static_assert(kCpuFlagsSize == ICpuInfo::FLAG_MAX, "kCpuFlagsSize and FLAG_MAX m
 
 
 #ifdef XMRIG_FEATURE_MSR
-constexpr size_t kMsrArraySize                                  = 5;
+constexpr size_t kMsrArraySize                                  = 6;
 static const std::array<const char *, kMsrArraySize> msrNames   = { MSR_NAMES_LIST };
 static_assert(kMsrArraySize == ICpuInfo::MSR_MOD_MAX, "kMsrArraySize and MSR_MOD_MAX mismatch");
 #endif
@@ -250,8 +250,14 @@ xmrig::BasicCpuInfo::BasicCpuInfo() :
                     break;
 
                 case 0x19:
-                    m_arch = ARCH_ZEN3;
-                    m_msrMod = MSR_MOD_RYZEN_19H;
+                    if (m_model == 0x61) {
+                        m_arch = ARCH_ZEN4;
+                        m_msrMod = MSR_MOD_RYZEN_19H_ZEN4;
+                    }
+                    else {
+                        m_arch = ARCH_ZEN3;
+                        m_msrMod = MSR_MOD_RYZEN_19H;
+                    }
                     break;
 
                 default:
@@ -359,16 +365,6 @@ xmrig::CpuThreads xmrig::BasicCpuInfo::threads(const Algorithm &algorithm, uint3
 #   ifdef XMRIG_ALGO_ARGON2
     if (f == Algorithm::ARGON2) {
         return count;
-    }
-#   endif
-
-#   ifdef XMRIG_ALGO_ASTROBWT
-    if (f == Algorithm::ASTROBWT) {
-        CpuThreads threads;
-        for (size_t i = 0; i < count; ++i) {
-            threads.add(i, 0);
-        }
-        return threads;
     }
 #   endif
 

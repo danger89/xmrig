@@ -62,11 +62,6 @@
 #endif
 
 
-#ifdef XMRIG_ALGO_ASTROBWT
-#   include "crypto/astrobwt/AstroBWT.h"
-#endif
-
-
 #ifdef XMRIG_ALGO_GHOSTRIDER
 #   include "crypto/ghostrider/ghostrider.h"
 #endif
@@ -399,10 +394,6 @@ xmrig::Miner::Miner(Controller *controller)
     Rx::init(this);
 #   endif
 
-#   ifdef XMRIG_ALGO_ASTROBWT
-    astrobwt::init();
-#   endif
-
     controller->addListener(this);
 
 #   ifdef XMRIG_FEATURE_API
@@ -515,7 +506,7 @@ void xmrig::Miner::setEnabled(bool enabled)
         return;
     }
 
-    if (d_ptr->battery_power && enabled) {
+    if (d_ptr->controller->config()->isPauseOnBattery() && d_ptr->battery_power && enabled) {
         LOG_INFO("%s " YELLOW_BOLD("can't resume while on battery power"), Tags::miner());
 
         return;
@@ -570,6 +561,12 @@ void xmrig::Miner::setJob(const Job &job, bool donate)
     const uint8_t index = donate ? 1 : 0;
 
     d_ptr->reset = !(d_ptr->job.index() == 1 && index == 0 && d_ptr->userJobId == job.id());
+
+    // Don't reset nonce if pool sends the same hashing blob again, but with different difficulty (for example)
+    if (d_ptr->job.isEqualBlob(job)) {
+        d_ptr->reset = false;
+    }
+
     d_ptr->job   = job;
     d_ptr->job.setIndex(index);
 

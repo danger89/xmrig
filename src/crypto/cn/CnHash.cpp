@@ -35,11 +35,6 @@
 #endif
 
 
-#ifdef XMRIG_ALGO_ASTROBWT
-#   include "crypto/astrobwt/AstroBWT.h"
-#endif
-
-
 #define ADD_FN(algo) do {                                                                            \
         m_map[algo] = new cn_hash_fun_array{};                                                       \
         m_map[algo]->data[AV_SINGLE][Assembly::NONE]      = cryptonight_single_hash<algo, false, 0>; \
@@ -375,16 +370,6 @@ xmrig::CnHash::CnHash()
     m_map[Algorithm::AR2_WRKZ]->data[AV_SINGLE_SOFT][Assembly::NONE]      = argon2::single_hash<Algorithm::AR2_WRKZ>;
 #   endif
 
-#   ifdef XMRIG_ALGO_ASTROBWT
-    m_map[Algorithm::ASTROBWT_DERO] = new cn_hash_fun_array{};
-    m_map[Algorithm::ASTROBWT_DERO]->data[AV_SINGLE][Assembly::NONE]      = astrobwt::single_hash<Algorithm::ASTROBWT_DERO>;
-    m_map[Algorithm::ASTROBWT_DERO]->data[AV_SINGLE_SOFT][Assembly::NONE] = astrobwt::single_hash<Algorithm::ASTROBWT_DERO>;
-
-    m_map[Algorithm::ASTROBWT_DERO_2] = new cn_hash_fun_array{};
-    m_map[Algorithm::ASTROBWT_DERO_2]->data[AV_SINGLE][Assembly::NONE]      = astrobwt::single_hash<Algorithm::ASTROBWT_DERO_2>;
-    m_map[Algorithm::ASTROBWT_DERO_2]->data[AV_SINGLE_SOFT][Assembly::NONE] = astrobwt::single_hash<Algorithm::ASTROBWT_DERO_2>;
-#   endif
-
 #   ifdef XMRIG_ALGO_GHOSTRIDER
     ADD_FN(Algorithm::CN_GR_0);
     ADD_FN(Algorithm::CN_GR_1);
@@ -422,8 +407,12 @@ xmrig::cn_hash_fun xmrig::CnHash::fn(const Algorithm &algorithm, AlgoVariant av,
     }
 
 #   ifdef XMRIG_ALGO_CN_HEAVY
-    // cn-heavy optimization for Zen3 CPUs
-    if ((av == AV_SINGLE) && (assembly != Assembly::NONE) && (Cpu::info()->arch() == ICpuInfo::ARCH_ZEN3) && (Cpu::info()->model() == 0x21)) {
+    // cn-heavy optimization for Zen3/Zen4 CPUs
+    const auto arch = Cpu::info()->arch();
+    const uint32_t model = Cpu::info()->model();
+    const bool is_vermeer = (arch == ICpuInfo::ARCH_ZEN3) && (model == 0x21);
+    const bool is_raphael = (arch == ICpuInfo::ARCH_ZEN4) && (model == 0x61);
+    if ((av == AV_SINGLE) && (assembly != Assembly::NONE) && (is_vermeer || is_raphael)) {
         switch (algorithm.id()) {
         case Algorithm::CN_HEAVY_0:
             return cryptonight_single_hash<Algorithm::CN_HEAVY_0, false, 3>;
