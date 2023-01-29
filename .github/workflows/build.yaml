@@ -12,7 +12,7 @@ jobs:
       run: |
         sudo apt-get install -y build-essential libuv1-dev libssl-dev libhwloc-dev
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Create directory
       run: mkdir build
     - name: Configure build
@@ -24,7 +24,7 @@ jobs:
     - name: Make executable
       working-directory: ${{env.working-dir}}
       run: chmod u+x ./xmrig
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: my-xmrig
         path: build/xmrig
